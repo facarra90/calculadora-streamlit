@@ -1,31 +1,34 @@
 import streamlit as st
+import pandas as pd
 
 st.title("Tabla 3x3 con Sumas Automáticas")
 
-st.write("Ingresa los números en cada celda:")
+# Crear un DataFrame 3x3 con valores iniciales en 0.0
+df = pd.DataFrame([[0.0, 0.0, 0.0] for _ in range(3)], columns=["A", "B", "C"])
 
-# Inicializar la tabla 3x3 (se usa para calcular las sumas)
-tabla = [[0.0, 0.0, 0.0] for _ in range(3)]
+st.write("Edita los valores en la tabla (haz click en cada celda para modificarlos):")
 
-# Mostrar la tabla con los inputs y calcular la suma de cada fila
-for i in range(3):
-    # Crear 4 columnas: 3 para los inputs y 1 para mostrar la suma de la fila
-    cols = st.columns(4)
-    for j in range(3):
-        # Cada input tiene una clave única para mantener el estado
-        tabla[i][j] = cols[j].number_input(
-            label=f"({i+1},{j+1})", 
-            value=tabla[i][j],
-            key=f"celda_{i}_{j}"
-        )
-    # Calcular y mostrar la suma de la fila
-    suma_fila = sum(tabla[i])
-    cols[3].write(f"Suma fila: {suma_fila}")
+# Mostrar el DataFrame en un editor de datos (apariencia similar a Excel sin botones de más/menos)
+edited_df = st.experimental_data_editor(df, num_rows="fixed", use_container_width=True)
 
-# Calcular y mostrar la suma de cada columna
-st.markdown("### Sumas de Columnas")
-cols = st.columns(4)
-for j in range(3):
-    suma_col = sum(tabla[i][j] for i in range(3))
-    cols[j].write(f"Columna {j+1}: {suma_col}")
-cols[3].write("")  # Espacio vacío
+# Calcular la suma de cada fila y cada columna
+row_sums = edited_df.sum(axis=1)
+col_sums = edited_df.sum(axis=0)
+
+# Construir una nueva tabla que incluya los totales
+tabla_con_sumas = edited_df.copy()
+tabla_con_sumas["Suma"] = row_sums
+
+# Crear una fila con las sumas de cada columna y el total general
+suma_total = col_sums.sum()
+fila_sumas = col_sums.append(pd.Series({"Suma": suma_total}))
+fila_sumas = pd.DataFrame(fila_sumas).T
+
+# Asignar un índice descriptivo para la fila de sumas
+fila_sumas.index = ["Suma"]
+
+# Combinar la tabla editable con la fila de sumas
+tabla_final = pd.concat([tabla_con_sumas, fila_sumas])
+
+st.write("### Tabla con Sumas")
+st.table(tabla_final)
