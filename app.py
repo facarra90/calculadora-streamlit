@@ -8,8 +8,11 @@ df = pd.DataFrame([[0.0, 0.0, 0.0] for _ in range(3)], columns=["A", "B", "C"])
 
 st.write("Edita los valores en la tabla:")
 
-# Usar st.data_editor (versión actual) en lugar de st.experimental_data_editor
-edited_df = st.data_editor(df, num_rows="fixed", use_container_width=True)
+# Utiliza la función disponible según la versión de Streamlit
+if hasattr(st, 'data_editor'):
+    edited_df = st.data_editor(df, num_rows="fixed", use_container_width=True)
+else:
+    edited_df = st.experimental_data_editor(df, num_rows="fixed", use_container_width=True)
 
 # Calcular la suma de cada fila y cada columna
 row_sums = edited_df.sum(axis=1)
@@ -31,3 +34,4 @@ tabla_final = pd.concat([tabla_con_sumas, fila_sumas])
 
 st.write("### Tabla con Sumas")
 st.table(tabla_final)
+
